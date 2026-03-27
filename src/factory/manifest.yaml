@@ -10,7 +10,8 @@
 services:
   gmail:
     tool_name: manage_email
-    description: "Search, read, send, forward, or manage emails in a Google Workspace account. Supports Gmail search syntax."
+    description: "Search, read, send, forward, or manage emails in a Google
+      Workspace account. Supports Gmail search syntax."
     requires_email: true
     gws_service: gmail
     operations:
@@ -24,7 +25,8 @@ services:
         params:
           query:
             type: string
-            description: 'Gmail search query (e.g. "from:alice subject:meeting has:attachment")'
+            description: 'Gmail search query (e.g. "from:alice subject:meeting
+              has:attachment")'
             maps_to: q
           maxResults:
             type: number
@@ -36,7 +38,7 @@ services:
         hydration:
           resource: users.messages.get
           format: metadata
-          headers: [From, Subject, Date]
+          headers: [ From, Subject, Date ]
 
       read:
         type: detail
@@ -53,7 +55,8 @@ services:
 
       send:
         type: action
-        description: "compose and send a new email (creates draft when attachments present, 35MB attachment limit via upload endpoint)"
+        description: "compose and send a new email (creates draft when attachments
+          present, 35MB attachment limit via upload endpoint)"
         helper: "+send"
         params:
           to:
@@ -76,13 +79,15 @@ services:
             description: "BCC email(s), comma-separated"
           attachments:
             type: string
-            description: "Workspace filenames to attach, comma-separated (files must exist in workspace via manage_workspace). Creates draft when present."
+            description: "Workspace filenames to attach, comma-separated (files must exist
+              in workspace via manage_workspace). Creates draft when present."
           html:
             type: boolean
             description: "Treat body as HTML content (default: plain text)"
           draft:
             type: boolean
-            description: "Save as draft instead of sending (default: false, forced true when attachments present)"
+            description: "Save as draft instead of sending (default: false, forced true when
+              attachments present)"
         cli_args:
           to: "--to"
           subject: "--subject"
@@ -130,7 +135,8 @@ services:
 
       forward:
         type: action
-        description: "forward a message to new recipients (includes original attachments by default)"
+        description: "forward a message to new recipients (includes original attachments
+          by default)"
         helper: "+forward"
         params:
           messageId:
@@ -184,7 +190,8 @@ services:
 
       getAttachment:
         type: detail
-        description: "download an email attachment to workspace directory (use read first to see attachment list)"
+        description: "download an email attachment to workspace directory (use read
+          first to see attachment list)"
         resource: users.messages.attachments.get
         params:
           messageId:
@@ -193,14 +200,16 @@ services:
             required: true
           filename:
             type: string
-            description: "Filename to save as (from the read response, e.g. 'invoice_template.md')"
+            description: "Filename to save as (from the read response, e.g.
+              'invoice_template.md')"
             required: true
         defaults:
           userId: me
 
       viewAttachment:
         type: detail
-        description: "view an image attachment inline without saving to workspace (png, jpg, gif, webp). Use for quick preview — use getAttachment to save."
+        description: "view an image attachment inline without saving to workspace (png,
+          jpg, gif, webp). Use for quick preview — use getAttachment to save."
         resource: users.messages.attachments.get
         params:
           messageId:
@@ -226,10 +235,12 @@ services:
             maps_to: id
           addLabelIds:
             type: string
-            description: "Comma-separated label IDs to add (e.g. STARRED, IMPORTANT, Label_123)"
+            description: "Comma-separated label IDs to add (e.g. STARRED, IMPORTANT,
+              Label_123)"
           removeLabelIds:
             type: string
-            description: "Comma-separated label IDs to remove (e.g. UNREAD, INBOX to archive)"
+            description: "Comma-separated label IDs to remove (e.g. UNREAD, INBOX to
+              archive)"
         defaults:
           userId: me
 
@@ -365,7 +376,8 @@ services:
 
       quickAdd:
         type: action
-        description: "create event from natural language (e.g. 'Lunch with Alice tomorrow at noon')"
+        description: "create event from natural language (e.g. 'Lunch with Alice
+          tomorrow at noon')"
         resource: events.quickAdd
         params:
           text:
@@ -377,7 +389,8 @@ services:
 
       update:
         type: action
-        description: "update an existing event (patch semantics — only changed fields needed)"
+        description: "update an existing event (patch semantics — only changed fields
+          needed)"
         resource: events.patch
         params:
           eventId:
@@ -437,7 +450,8 @@ services:
 
   drive:
     tool_name: manage_drive
-    description: "Search, upload, download, share, or manage files in Google Drive."
+    description: "Search, upload, download, copy, delete, export, share Google Drive
+      files, and read/write Google Sheets and Docs."
     requires_email: true
     gws_service: drive
     operations:
@@ -451,7 +465,8 @@ services:
         params:
           query:
             type: string
-            description: "Drive search query (e.g. \"name contains 'budget'\" or \"mimeType='application/pdf'\")"
+            description: "Drive search query (e.g. \"name contains 'budget'\" or
+              \"mimeType='application/pdf'\")"
             maps_to: q
           maxResults:
             type: number
@@ -472,7 +487,8 @@ services:
             description: "File ID"
             required: true
         defaults:
-          fields: "id, name, mimeType, modifiedTime, size, webViewLink, owners, shared, parents"
+          fields: "id, name, mimeType, modifiedTime, size, webViewLink, owners, shared,
+            parents"
 
       # --- File operations ---
 
@@ -497,7 +513,8 @@ services:
 
       viewImage:
         type: detail
-        description: "view an image file inline without saving to workspace (png, jpg, gif, webp). Use for quick preview — use download to save."
+        description: "view an image file inline without saving to workspace (png, jpg,
+          gif, webp). Use for quick preview — use download to save."
         resource: files.get
         params:
           fileId:
@@ -545,7 +562,8 @@ services:
 
       export:
         type: action
-        description: "export a Google Workspace document (Docs, Sheets, Slides) to a file format"
+        description: "export a Google Workspace document (Docs, Sheets, Slides) to a
+          file format"
         resource: files.export
         params:
           fileId:
@@ -554,7 +572,9 @@ services:
             required: true
           mimeType:
             type: string
-            description: "Target format (e.g. application/pdf, text/csv, text/plain, application/vnd.openxmlformats-officedocument.wordprocessingml.document)"
+            description: "Target format (e.g. application/pdf, text/csv, text/plain,
+              application/vnd.openxmlformats-officedocument.wordprocessingml.do\
+              cument)"
             required: true
           outputPath:
             type: string
@@ -588,7 +608,7 @@ services:
           role:
             type: string
             description: "Permission level"
-            enum: [reader, commenter, writer, organizer]
+            enum: [ reader, commenter, writer, organizer ]
             default: reader
 
       unshare:
@@ -604,19 +624,7 @@ services:
             type: string
             description: "Permission ID to remove (from listPermissions)"
             required: true
-
-  # ========================================================================
-  # Sheets
-  # ========================================================================
-
-  sheets:
-    tool_name: manage_sheets
-    description: "Read, write, and manage Google Sheets spreadsheets."
-    requires_email: true
-    gws_service: sheets
-    operations:
-
-      get:
+      sheets_get:
         type: detail
         description: "get spreadsheet metadata and sheet names"
         resource: spreadsheets.get
@@ -625,13 +633,13 @@ services:
             type: string
             description: "Spreadsheet ID"
             required: true
-
-      create:
+        gws_service: sheets
+      sheets_create:
         type: action
         description: "create a new empty spreadsheet"
         resource: spreadsheets.create
-
-      read:
+        gws_service: sheets
+      sheets_read:
         type: detail
         description: "read cell values from a range"
         helper: "+read"
@@ -647,8 +655,8 @@ services:
         cli_args:
           spreadsheetId: "--spreadsheet"
           range: "--range"
-
-      append:
+        gws_service: sheets
+      sheets_append:
         type: action
         description: "append rows to a spreadsheet"
         helper: "+append"
@@ -662,13 +670,14 @@ services:
             description: "Comma-separated values for a single row (e.g. 'Alice,100,true')"
           jsonValues:
             type: string
-            description: "JSON array of rows for bulk insert (e.g. '[[\"a\",\"b\"],[\"c\",\"d\"]]')"
+            description: "JSON array of rows for bulk insert (e.g.
+              '[[\"a\",\"b\"],[\"c\",\"d\"]]')"
         cli_args:
           spreadsheetId: "--spreadsheet"
           values: "--values"
           jsonValues: "--json-values"
-
-      getValues:
+        gws_service: sheets
+      sheets_getValues:
         type: detail
         description: "get values from a specific range (raw API)"
         resource: spreadsheets.values.get
@@ -681,8 +690,8 @@ services:
             type: string
             description: "A1 notation range (e.g. 'Sheet1!A1:B10')"
             required: true
-
-      updateValues:
+        gws_service: sheets
+      sheets_updateValues:
         type: action
         description: "write values to a specific range"
         resource: spreadsheets.values.update
@@ -695,19 +704,8 @@ services:
             type: string
             description: "A1 notation range to write to"
             required: true
-
-  # ========================================================================
-  # Docs
-  # ========================================================================
-
-  docs:
-    tool_name: manage_docs
-    description: "Read and write Google Docs documents."
-    requires_email: true
-    gws_service: docs
-    operations:
-
-      get:
+        gws_service: sheets
+      docs_get:
         type: detail
         description: "get document content and metadata"
         resource: documents.get
@@ -716,13 +714,13 @@ services:
             type: string
             description: "Document ID"
             required: true
-
-      create:
+        gws_service: docs
+      docs_create:
         type: action
         description: "create a new blank document"
         resource: documents.create
-
-      write:
+        gws_service: docs
+      docs_write:
         type: action
         description: "append text to the end of a document"
         helper: "+write"
@@ -738,6 +736,7 @@ services:
         cli_args:
           documentId: "--document"
           text: "--text"
+        gws_service: docs
 
   # ========================================================================
   # Tasks
@@ -888,7 +887,9 @@ services:
 
   meet:
     tool_name: manage_meet
-    description: "Browse past Google Meet conferences, participants, transcripts, recordings, and AI-generated smart notes. Requires Workspace Business Standard+ for transcripts/recordings."
+    description: "Browse past Google Meet conferences, participants, transcripts,
+      recordings, and AI-generated smart notes. Requires Workspace Business
+      Standard+ for transcripts/recordings."
     requires_email: true
     gws_service: meet
     operations:
@@ -902,7 +903,8 @@ services:
         params:
           filter:
             type: string
-            description: "EBNF filter (e.g. 'space.meeting_code = \"abc-mnop-xyz\"' or 'start_time>=\"2026-01-01T00:00:00Z\"')"
+            description: "EBNF filter (e.g. 'space.meeting_code = \"abc-mnop-xyz\"' or
+              'start_time>=\"2026-01-01T00:00:00Z\"')"
           maxResults:
             type: number
             description: "Max conferences to return (default: 25, max: 100)"
@@ -947,7 +949,8 @@ services:
 
       listTranscripts:
         type: list
-        description: "list transcripts for a conference (requires Workspace Business Standard+)"
+        description: "list transcripts for a conference (requires Workspace Business
+          Standard+)"
         resource: conferenceRecords.transcripts.list
         params:
           conferenceId:
@@ -974,7 +977,8 @@ services:
         params:
           transcriptName:
             type: string
-            description: "Transcript resource name (e.g. conferenceRecords/.../transcripts/...)"
+            description: "Transcript resource name (e.g.
+              conferenceRecords/.../transcripts/...)"
             required: true
             maps_to: parent
           maxResults:
@@ -1012,7 +1016,9 @@ services:
 
       getFullTranscript:
         type: detail
-        description: "get the full who-said-what transcript for a conference (chains transcripts + entries + participant names automatically). Use pageToken to continue reading."
+        description: "get the full who-said-what transcript for a conference (chains
+          transcripts + entries + participant names automatically). Use
+          pageToken to continue reading."
         resource: conferenceRecords.transcripts.list
         params:
           conferenceId:
@@ -1021,7 +1027,8 @@ services:
             required: true
           pageToken:
             type: string
-            description: "Page token from a previous getFullTranscript call to continue reading"
+            description: "Page token from a previous getFullTranscript call to continue
+              reading"
 
       # --- Smart Notes (Gemini) ---
 
@@ -1046,6 +1053,5 @@ services:
             description: "Smart note resource name (from listSmartNotes)"
             required: true
             maps_to: name
-
   # People (contacts) excluded pending gws auth scope support for contacts.readonly.
   # See https://github.com/googleworkspace/cli/issues/556

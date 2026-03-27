@@ -99,47 +99,59 @@ export function generateSchema(service: ServiceDef): GeneratedToolSchema {
     .map(name => `${name}: ${service.operations[name].description}`)
     .join(' | ');
 
-  // Collect all unique params across operations
-  const allParams: Record<string, { type: string; description: string; enum?: string[] }> = {};
-  for (const op of Object.values(service.operations)) {
-    if (!op.params) continue;
-    for (const [paramName, paramDef] of Object.entries(op.params)) {
-      if (!allParams[paramName]) {
-        allParams[paramName] = {
+  const anyOf = [];
+
+  for (const [opName, opDef] of Object.entries(service.operations)) {
+    const properties: Record<string, unknown> = {
+      operation: {
+        type: 'string',
+        const: opName,
+        description: opDef.description,
+      },
+    };
+
+    const required = ['operation'];
+
+    if (service.requires_email) {
+      properties.email = { type: 'string', description: 'Account email address' };
+      required.push('email');
+    }
+
+    if (opDef.params) {
+      for (const [paramName, paramDef] of Object.entries(opDef.params)) {
+        properties[paramName] = {
           type: paramDef.type,
           description: paramDef.description,
           ...(paramDef.enum ? { enum: paramDef.enum } : {}),
         };
+        if (paramDef.required) {
+          required.push(paramName);
+        }
       }
     }
+
+    anyOf.push({
+      type: 'object',
+      properties,
+      required,
+      additionalProperties: false,
+    });
   }
-
-  const properties: Record<string, unknown> = {
-    operation: {
-      type: 'string',
-      enum: operationNames,
-      description: operationDescriptions,
-    },
-  };
-
-  if (service.requires_email) {
-    properties.email = { type: 'string', description: 'Account email address' };
-  }
-
-  for (const [name, def] of Object.entries(allParams)) {
-    properties[name] = { type: def.type, description: def.description, ...(def.enum ? { enum: def.enum } : {}) };
-  }
-
-  const required = service.requires_email ? ['operation', 'email'] : ['operation'];
 
   return {
     name: service.tool_name,
     description: service.description,
     inputSchema: {
       type: 'object',
-      properties,
-      required,
-      additionalProperties: false,
+      properties: {
+        operation: {
+          type: 'string',
+          enum: operationNames,
+          description: operationDescriptions,
+        },
+      },
+      required: ['operation'],
+      anyOf,
     },
   };
 }
@@ -185,7 +197,7 @@ export function generateHandler(
     // Build gws args
     let args = policyResult.action === 'downgrade' && policyResult.replacementArgs
       ? policyResult.replacementArgs
-      : buildArgs(service.gws_service, opDef, params);
+      : buildArgs(opDef.gws_service ?? service.gws_service, opDef, params);
 
     // beforeExecute hook (service-specific)
     if (patch?.beforeExecute?.[operation]) {

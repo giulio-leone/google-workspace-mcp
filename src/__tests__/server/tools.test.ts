@@ -18,8 +18,7 @@ describe('tool registry', () => {
     expect(names).toContain('manage_email');
     expect(names).toContain('manage_calendar');
     expect(names).toContain('manage_drive');
-    expect(names).toContain('manage_sheets');
-    expect(names).toContain('manage_docs');
+    expect(names).toContain('manage_drive');
     expect(names).toContain('manage_tasks');
     expect(names.length).toBeGreaterThanOrEqual(8);
   });
@@ -36,7 +35,13 @@ describe('tool registry', () => {
   it('all schemas have additionalProperties: false', () => {
     for (const tool of toolSchemas) {
       const schema = tool.inputSchema as Record<string, unknown>;
-      expect(schema.additionalProperties).toBe(false);
+      if (schema.anyOf) {
+        for (const anyOfItem of schema.anyOf as any[]) {
+          expect(anyOfItem.additionalProperties).toBe(false);
+        }
+      } else {
+        expect(schema.additionalProperties).toBe(false);
+      }
     }
   });
 
@@ -63,7 +68,7 @@ describe('manage_email schema', () => {
   });
 
   it('requires email', () => {
-    const required = (tool.inputSchema as any).required;
+    const required = (tool.inputSchema as any).anyOf[0].required;
     expect(required).toContain('email');
   });
 });

@@ -38,6 +38,8 @@ export interface OperationDef {
   resource?: string;
   /** gws helper shorthand (e.g. "+triage", "+send"). */
   helper?: string;
+  /** Override the gws_service for this specific operation. */
+  gws_service?: string;
   /** Named parameters the caller can provide. */
   params?: Record<string, ParamDef>;
   /** Default values merged into the gws --params JSON. */

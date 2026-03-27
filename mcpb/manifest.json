@@ -55,15 +55,7 @@
     },
     {
       "name": "manage_drive",
-      "description": "Search, upload, download, copy, delete, export, and share Google Drive files"
-    },
-    {
-      "name": "manage_sheets",
-      "description": "Read, write, and manage Google Sheets spreadsheets"
-    },
-    {
-      "name": "manage_docs",
-      "description": "Read and write Google Docs documents"
+      "description": "Search, upload, download, copy, delete, export, share Google Drive files, and read/write Google Sheets and Docs"
     },
     {
       "name": "manage_tasks",

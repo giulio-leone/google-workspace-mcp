@@ -70,7 +70,7 @@ describe('createServer', () => {
       const names = result.tools.map((t: any) => t.name);
       expect(names).toContain('manage_accounts');
       expect(names).toContain('manage_email');
-      expect(names).toContain('manage_sheets');
+      expect(names).toContain('manage_drive');
       expect(names).toContain('manage_tasks');
       expect(names.length).toBeGreaterThanOrEqual(8);
     });

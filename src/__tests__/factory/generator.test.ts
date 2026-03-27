@@ -43,27 +43,30 @@ describe('generateSchema', () => {
 
   it('includes email param when requires_email is true', () => {
     const schema = generateSchema(manifest.services.gmail);
-    const required = schema.inputSchema.required as string[];
+    const required = (schema.inputSchema as any).anyOf[0].required as string[];
     expect(required).toContain('email');
   });
 
   it('collects params from all operations', () => {
     const schema = generateSchema(manifest.services.gmail);
-    const props = schema.inputSchema.properties as Record<string, any>;
+    const anyOf = (schema.inputSchema as any).anyOf;
+    const searchOp = anyOf.find((s: any) => s.properties.operation.const === 'search');
+    const readOp = anyOf.find((s: any) => s.properties.operation.const === 'read');
+    const sendOp = anyOf.find((s: any) => s.properties.operation.const === 'send');
     // From search
-    expect(props.query).toBeDefined();
-    expect(props.maxResults).toBeDefined();
+    expect(searchOp.properties.query).toBeDefined();
+    expect(searchOp.properties.maxResults).toBeDefined();
     // From read
-    expect(props.messageId).toBeDefined();
+    expect(readOp.properties.messageId).toBeDefined();
     // From send
-    expect(props.to).toBeDefined();
-    expect(props.subject).toBeDefined();
-    expect(props.body).toBeDefined();
+    expect(sendOp.properties.to).toBeDefined();
+    expect(sendOp.properties.subject).toBeDefined();
+    expect(sendOp.properties.body).toBeDefined();
   });
 
   it('sets additionalProperties: false', () => {
     const schema = generateSchema(manifest.services.gmail);
-    expect(schema.inputSchema.additionalProperties).toBe(false);
+    expect((schema.inputSchema as any).anyOf[0].additionalProperties).toBe(false);
   });
 
   it('uses tool_name from service def', () => {
@@ -76,12 +79,12 @@ describe('generateTools', () => {
   it('produces one tool per manifest service', () => {
     const manifest = loadManifest();
     const tools = generateTools(manifest, patches);
-    expect(tools.length).toBeGreaterThanOrEqual(6);
+    expect(tools.length).toBeGreaterThanOrEqual(5);
     const names = tools.map(t => t.schema.name);
     expect(names).toContain('manage_email');
     expect(names).toContain('manage_calendar');
     expect(names).toContain('manage_drive');
-    expect(names).toContain('manage_sheets');
+    expect(names).toContain('manage_drive');
     expect(names).toContain('manage_tasks');
     expect(names).toContain('manage_meet');
     // manage_contacts excluded pending gws auth scope support

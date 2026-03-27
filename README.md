@@ -6,6 +6,8 @@ Built on [Google's official Workspace CLI](https://github.com/googleworkspace/cl
 
 ## Why This MCP Server
 
+**Agentic First Design:** The server has been explicitly refactored to be LLM-friendly. It employs rigid `anyOf` JSON Schemas ensuring that parameter hallucinations are prevented by strictly mapping parameters to their respective operations. Tools are highly consolidated (e.g., Docs and Sheets are merged seamlessly into Drive) keeping the overall tool-count low so as not to overwhelm LLM context windows.
+
 **For users:** One install gives your AI agent real, authenticated access to your Google accounts. Search email, check your calendar, manage Drive files, chain multi-step workflows — all through natural conversation.
 
 **For teams:** Multi-account support means your agent can work across personal and work accounts simultaneously, with per-account credential isolation and XDG-compliant storage.
@@ -14,13 +16,15 @@ Built on [Google's official Workspace CLI](https://github.com/googleworkspace/cl
 
 ## What's Available
 
-**5 tools, 32+ operations across 3 core services:**
+**7 tools, 40+ operations across core services:**
 
 | Tool | Operations | What It Does |
 |------|-----------|--------------|
 | `manage_email` | search, read, send, reply, replyAll, forward, triage, trash, untrash, modify, labels, threads, getThread | Full Gmail — search, read, compose, thread management, label management |
 | `manage_calendar` | list, agenda, get, create, quickAdd, update, delete, calendars, freebusy | Calendar CRUD, natural language event creation, availability checks |
-| `manage_drive` | search, get, upload, download, copy, delete, export, listPermissions, share, unshare | File management, Google Docs export, sharing and permissions |
+| `manage_drive` | search, get, upload, download, copy, delete, export, listPermissions, share, unshare, sheets_get, sheets_create, sheets_read, sheets_write, docs_get, docs_create, docs_write | Unified Drive/Docs/Sheets tool for complete file management |
+| `manage_tasks` | listTaskLists, getTaskList, createTaskList, deleteTaskList, list, get, create, update, complete, delete | Manage Google Tasks and task lists |
+| `manage_meet` | create | Generate Google Meet links |
 | `manage_accounts` | list, authenticate, remove, status, refresh, scopes | Multi-account lifecycle — add accounts, manage credentials and scopes |
 | `queue_operations` | — | Chain operations sequentially with `$N.field` result references |
 
