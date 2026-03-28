@@ -882,6 +882,184 @@ services:
             maps_to: task
 
   # ========================================================================
+  # Sheets
+  # ========================================================================
+
+  sheets:
+    tool_name: manage_sheets
+    description: "Read, write, and manage Google Sheets spreadsheets."
+    requires_email: true
+    gws_service: sheets
+    operations:
+
+      get:
+        type: detail
+        description: "get spreadsheet metadata and sheet names"
+        resource: spreadsheets.get
+        params:
+          spreadsheetId:
+            type: string
+            description: "Spreadsheet ID"
+            required: true
+
+      create:
+        type: action
+        description: "create a new empty spreadsheet"
+        resource: spreadsheets.create
+
+      read:
+        type: detail
+        description: "read cell values from a range"
+        helper: "+read"
+        params:
+          spreadsheetId:
+            type: string
+            description: "Spreadsheet ID"
+            required: true
+          range:
+            type: string
+            description: "Range to read (e.g. 'Sheet1!A1:D10' or just 'Sheet1')"
+            required: true
+        cli_args:
+          spreadsheetId: "--spreadsheet"
+          range: "--range"
+
+      append:
+        type: action
+        description: "append rows to a spreadsheet"
+        helper: "+append"
+        params:
+          spreadsheetId:
+            type: string
+            description: "Spreadsheet ID"
+            required: true
+          values:
+            type: string
+            description: "Comma-separated values for a single row (e.g. 'Alice,100,true')"
+          jsonValues:
+            type: string
+            description: "JSON array of rows for bulk insert (e.g. '[[\"a\",\"b\"],[\"c\",\"d\"]]')"
+        cli_args:
+          spreadsheetId: "--spreadsheet"
+          values: "--values"
+          jsonValues: "--json-values"
+
+      getValues:
+        type: detail
+        description: "get values from a specific range (raw API)"
+        resource: spreadsheets.values.get
+        params:
+          spreadsheetId:
+            type: string
+            description: "Spreadsheet ID"
+            required: true
+          range:
+            type: string
+            description: "A1 notation range (e.g. 'Sheet1!A1:B10')"
+            required: true
+
+      updateValues:
+        type: action
+        description: "write values to a specific range"
+        resource: spreadsheets.values.update
+        params:
+          spreadsheetId:
+            type: string
+            description: "Spreadsheet ID"
+            required: true
+          range:
+            type: string
+            description: "A1 notation range to write to"
+            required: true
+
+  # ========================================================================
+  # Docs
+  # ========================================================================
+
+  docs:
+    tool_name: manage_docs
+    description: "Read and write Google Docs documents."
+    requires_email: true
+    gws_service: docs
+    operations:
+
+      get:
+        type: detail
+        description: "get document content and metadata"
+        resource: documents.get
+        params:
+          documentId:
+            type: string
+            description: "Document ID"
+            required: true
+
+      create:
+        type: action
+        description: "create a new blank document"
+        resource: documents.create
+
+      write:
+        type: action
+        description: "append text to the end of a document"
+        helper: "+write"
+        params:
+          documentId:
+            type: string
+            description: "Document ID"
+            required: true
+          text:
+            type: string
+            description: "Text to append (plain text)"
+            required: true
+        cli_args:
+          documentId: "--document"
+          text: "--text"
+
+  # ========================================================================
+  # Slides
+  # ========================================================================
+
+  slides:
+    tool_name: manage_slides
+    description: "Manage Google Slides presentations."
+    requires_email: true
+    gws_service: slides
+    operations:
+      get:
+        type: detail
+        description: "get presentation metadata and slides"
+        resource: presentations.get
+        params:
+          presentationId:
+            type: string
+            description: "Presentation ID"
+            required: true
+      create:
+        type: action
+        description: "create a new blank presentation"
+        resource: presentations.create
+
+  # ========================================================================
+  # Forms
+  # ========================================================================
+
+  forms:
+    tool_name: manage_forms
+    description: "Manage Google Forms."
+    requires_email: true
+    gws_service: forms
+    operations:
+      get:
+        type: detail
+        description: "get a form"
+        resource: forms.get
+        params:
+          formId:
+            type: string
+            description: "Form ID"
+            required: true
+
+  # ========================================================================
   # Meet
   # ========================================================================
 

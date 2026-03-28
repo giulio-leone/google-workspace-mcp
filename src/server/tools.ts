@@ -104,6 +104,26 @@ const handCodedSchemas: ToolSchema[] = [
     },
   },
   {
+    name: 'manage_notebooklm',
+    description: 'Interact with Google NotebookLM to manage notebooks, add sources, and chat with your documents.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        operation: {
+          type: 'string',
+          enum: ['authenticate', 'list', 'create', 'get_summary', 'add_source_url', 'chat'],
+          description: 'The operation to perform. Note: authenticate uses local browser to get tokens.',
+        },
+        notebookId: { type: 'string', description: 'Notebook ID for get_summary, add_source_url, or chat' },
+        title: { type: 'string', description: 'Title for new notebook (create operation)' },
+        url: { type: 'string', description: 'URL to add as a source (add_source_url operation)' },
+        question: { type: 'string', description: 'Question to ask the notebook (chat operation)' }
+      },
+      required: ['operation'],
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'queue_operations',
     description: 'Execute multiple operations in sequence. Operations run in order with result references ($0.field) to chain outputs. Use for multi-step workflows.',
     inputSchema: {
