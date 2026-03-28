@@ -99,59 +99,60 @@ export function generateSchema(service: ServiceDef): GeneratedToolSchema {
     .map(name => `${name}: ${service.operations[name].description}`)
     .join(' | ');
 
-  const anyOf = [];
-
+  // Collect all unique params across operations
+  const allParams: Record<string, { type: string; description: string; enum?: string[]; requiredBy: string[] }> = {};
+  
   for (const [opName, opDef] of Object.entries(service.operations)) {
-    const properties: Record<string, unknown> = {
-      operation: {
-        type: 'string',
-        const: opName,
-        description: opDef.description,
-      },
-    };
-
-    const required = ['operation'];
-
-    if (service.requires_email) {
-      properties.email = { type: 'string', description: 'Account email address' };
-      required.push('email');
-    }
-
-    if (opDef.params) {
-      for (const [paramName, paramDef] of Object.entries(opDef.params)) {
-        properties[paramName] = {
+    if (!opDef.params) continue;
+    for (const [paramName, paramDef] of Object.entries(opDef.params)) {
+      if (!allParams[paramName]) {
+        allParams[paramName] = {
           type: paramDef.type,
           description: paramDef.description,
           ...(paramDef.enum ? { enum: paramDef.enum } : {}),
+          requiredBy: [],
         };
-        if (paramDef.required) {
-          required.push(paramName);
-        }
+      }
+      if (paramDef.required) {
+        allParams[paramName].requiredBy.push(opName);
       }
     }
-
-    anyOf.push({
-      type: 'object',
-      properties,
-      required,
-      additionalProperties: false,
-    });
   }
+
+  const properties: Record<string, unknown> = {
+    operation: {
+      type: 'string',
+      enum: operationNames,
+      description: operationDescriptions,
+    },
+  };
+
+  if (service.requires_email) {
+    properties.email = { type: 'string', description: 'Account email address' };
+  }
+
+  for (const [name, def] of Object.entries(allParams)) {
+    let desc = def.description;
+    if (def.requiredBy.length > 0) {
+      desc += ` (Required for: ${def.requiredBy.join(', ')})`;
+    }
+    properties[name] = { 
+      type: def.type, 
+      description: desc, 
+      ...(def.enum ? { enum: def.enum } : {}) 
+    };
+  }
+
+  const required = service.requires_email ? ['operation', 'email'] : ['operation'];
 
   return {
     name: service.tool_name,
     description: service.description,
     inputSchema: {
       type: 'object',
-      properties: {
-        operation: {
-          type: 'string',
-          enum: operationNames,
-          description: operationDescriptions,
-        },
-      },
-      required: ['operation'],
-      anyOf,
+      properties,
+      required,
+      additionalProperties: false,
     },
   };
 }

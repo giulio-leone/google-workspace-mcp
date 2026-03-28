@@ -35,13 +35,7 @@ describe('tool registry', () => {
   it('all schemas have additionalProperties: false', () => {
     for (const tool of toolSchemas) {
       const schema = tool.inputSchema as Record<string, unknown>;
-      if (schema.anyOf) {
-        for (const anyOfItem of schema.anyOf as any[]) {
-          expect(anyOfItem.additionalProperties).toBe(false);
-        }
-      } else {
-        expect(schema.additionalProperties).toBe(false);
-      }
+      expect(schema.additionalProperties).toBe(false);
     }
   });
 
@@ -68,7 +62,7 @@ describe('manage_email schema', () => {
   });
 
   it('requires email', () => {
-    const required = (tool.inputSchema as any).anyOf[0].required;
+    const required = (tool.inputSchema as any).required;
     expect(required).toContain('email');
   });
 });

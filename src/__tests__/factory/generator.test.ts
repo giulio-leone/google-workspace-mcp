@@ -43,30 +43,27 @@ describe('generateSchema', () => {
 
   it('includes email param when requires_email is true', () => {
     const schema = generateSchema(manifest.services.gmail);
-    const required = (schema.inputSchema as any).anyOf[0].required as string[];
+    const required = schema.inputSchema.required as string[];
     expect(required).toContain('email');
   });
 
   it('collects params from all operations', () => {
     const schema = generateSchema(manifest.services.gmail);
-    const anyOf = (schema.inputSchema as any).anyOf;
-    const searchOp = anyOf.find((s: any) => s.properties.operation.const === 'search');
-    const readOp = anyOf.find((s: any) => s.properties.operation.const === 'read');
-    const sendOp = anyOf.find((s: any) => s.properties.operation.const === 'send');
+    const props = schema.inputSchema.properties as Record<string, any>;
     // From search
-    expect(searchOp.properties.query).toBeDefined();
-    expect(searchOp.properties.maxResults).toBeDefined();
+    expect(props.query).toBeDefined();
+    expect(props.maxResults).toBeDefined();
     // From read
-    expect(readOp.properties.messageId).toBeDefined();
+    expect(props.messageId).toBeDefined();
     // From send
-    expect(sendOp.properties.to).toBeDefined();
-    expect(sendOp.properties.subject).toBeDefined();
-    expect(sendOp.properties.body).toBeDefined();
+    expect(props.to).toBeDefined();
+    expect(props.subject).toBeDefined();
+    expect(props.body).toBeDefined();
   });
 
   it('sets additionalProperties: false', () => {
     const schema = generateSchema(manifest.services.gmail);
-    expect((schema.inputSchema as any).anyOf[0].additionalProperties).toBe(false);
+    expect(schema.inputSchema.additionalProperties).toBe(false);
   });
 
   it('uses tool_name from service def', () => {
