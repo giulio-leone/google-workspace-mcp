@@ -23,6 +23,7 @@ export const SERVICE_SCOPE_MAP: Record<string, string[]> = {
     'https://www.googleapis.com/auth/meetings.space.readonly',
     'https://www.googleapis.com/auth/meetings.space.settings',
   ],
+  photos: ['https://www.googleapis.com/auth/photoslibrary'],
 };
 
 const BASE_SCOPES = [

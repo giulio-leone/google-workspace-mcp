@@ -2,6 +2,7 @@ import { handleAccounts } from './handlers/accounts.js';
 import { handleWorkspace } from './handlers/workspace.js';
 import { handleScratchpad } from './scratchpad/handler.js';
 import { handleNotebookLM } from '../services/notebooklm/index.js';
+import { handlePhotos } from '../services/photos/index.js';
 import { handleQueue } from './queue.js';
 import { generatedTools } from '../factory/registry.js';
 
@@ -33,6 +34,7 @@ const domainHandlers: Record<string, ToolHandler> = {
   manage_workspace: handleWorkspace,
   manage_scratchpad: handleScratchpad,
   manage_notebooklm: handleNotebookLM,
+  manage_photos: handlePhotos,
 };
 
 // Register factory-generated handlers

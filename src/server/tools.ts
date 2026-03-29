@@ -124,6 +124,26 @@ const handCodedSchemas: ToolSchema[] = [
     },
   },
   {
+    name: 'manage_photos',
+    description: 'Manage Google Photos using the Rust CLI backend.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        operation: {
+          type: 'string',
+          enum: ['list_albums', 'list_media', 'get_media'],
+          description: 'The operation to perform.',
+        },
+        email: { type: 'string', description: 'Email of the authenticated user to use for the operation (required)' },
+        albumId: { type: 'string', description: 'Filter media items by this Album ID (for list_media)' },
+        pageSize: { type: 'number', description: 'Number of results to return (default: 50)' },
+        mediaItemId: { type: 'string', description: 'Media Item ID for get_media operation' }
+      },
+      required: ['operation', 'email'],
+      additionalProperties: false,
+    },
+  },
+  {
     name: 'queue_operations',
     description: 'Execute multiple operations in sequence. Operations run in order with result references ($0.field) to chain outputs. Use for multi-step workflows.',
     inputSchema: {
