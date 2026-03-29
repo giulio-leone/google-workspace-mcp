@@ -13,7 +13,34 @@ use anyhow::Context;
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum EmailOperation {
-    Read, Search, Send, Reply, Forward, Trash, Untrash, Modify, Labels, Triage, Threads, GetThread, GetAttachment, Watch,
+    /// Read a single email message by ID. Requires: message_id.
+    Read,
+    /// Search messages using Gmail query syntax (e.g. "from:user@example.com is:unread"). Optional: query, max_results.
+    Search,
+    /// Send a new email. Requires: to, subject, body. Optional: cc, bcc.
+    Send,
+    /// Reply to a message. Requires: message_id, body.
+    Reply,
+    /// Forward a message. Requires: message_id, to.
+    Forward,
+    /// Move a message to trash. Requires: message_id.
+    Trash,
+    /// Restore a message from trash. Requires: message_id.
+    Untrash,
+    /// Add or remove labels from a message. Requires: message_id. Optional: add_labels, remove_labels.
+    Modify,
+    /// List all available Gmail labels.
+    Labels,
+    /// Get a summary of unread inbox messages (up to 20).
+    Triage,
+    /// List email threads. Optional: query, max_results.
+    Threads,
+    /// Get a full thread by ID. Requires: thread_id.
+    GetThread,
+    /// Download an attachment. Requires: message_id, attachment_id.
+    GetAttachment,
+    /// Set up Gmail push notifications via Pub/Sub. Requires: topic_name.
+    Watch,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema)]
@@ -126,31 +153,59 @@ impl McpTool for ManageEmailTool {
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum CalendarOperation {
-    Get, List, Create, QuickAdd, Update, Delete, Calendars, Freebusy, Watch,
+    /// Get a single event by ID. Requires: event_id.
+    Get,
+    /// List events in a calendar. Optional: time_min, time_max, max_results, query.
+    List,
+    /// Create a new event. Requires: summary, start, end. Optional: description, attendees, location.
+    Create,
+    /// Create event from natural language (e.g. "Lunch at noon tomorrow"). Requires: text.
+    QuickAdd,
+    /// Update an existing event. Requires: event_id. Optional: summary, start, end, description.
+    Update,
+    /// Delete an event. Requires: event_id.
+    Delete,
+    /// List all calendars for the user.
+    Calendars,
+    /// Check availability (free/busy). Requires: time_min, time_max.
+    Freebusy,
+    /// Set up push notifications for calendar changes. Requires: webhook_address.
+    Watch,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct ManageCalendarArgs {
+    /// The operation to perform.
     pub operation: CalendarOperation,
+    /// Authenticated user email (or 'me').
     pub email: String,
-    /// Calendar ID (default: 'primary').
+    /// Calendar ID (default: 'primary'). Use 'primary' for the user's main calendar.
     pub calendar_id: Option<String>,
+    /// Event ID — required for: get, update, delete.
     pub event_id: Option<String>,
+    /// Event title/summary — required for: create.
     pub summary: Option<String>,
+    /// Event description/notes.
     pub description: Option<String>,
+    /// Physical or virtual location.
     pub location: Option<String>,
-    /// ISO 8601.
+    /// Start time in ISO 8601 format (e.g. '2024-01-15T09:00:00-05:00'). Required for: create.
     pub start: Option<String>,
-    /// ISO 8601.
+    /// End time in ISO 8601 format. Required for: create.
     pub end: Option<String>,
-    /// Comma-separated attendee emails.
+    /// Comma-separated attendee emails (e.g. 'alice@example.com,bob@example.com').
     pub attendees: Option<String>,
-    /// Natural language for quick_add.
+    /// Natural language event description for quick_add (e.g. 'Meeting with Bob tomorrow at 3pm').
     pub text: Option<String>,
+    /// Filter events starting after this ISO 8601 timestamp.
     pub time_min: Option<String>,
+    /// Filter events ending before this ISO 8601 timestamp.
     pub time_max: Option<String>,
+    /// Free-text search query to filter events.
     pub query: Option<String>,
+    /// Maximum number of results to return (default: 10).
     pub max_results: Option<u32>,
+    /// HTTPS webhook URL for push notifications — required for: watch.
     pub webhook_address: Option<String>,
 }
 
@@ -216,24 +271,59 @@ impl McpTool for ManageCalendarTool {
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum DriveOperation {
-    Get, Search, Upload, Download, Copy, Delete, Export, ListPermissions, Share, Unshare, Watch,
+    /// Get file metadata by ID. Requires: file_id.
+    Get,
+    /// Search files using Drive query syntax (e.g. "name contains 'report'"). Optional: query, max_results.
+    Search,
+    /// Upload a new file. Requires: name, mime_type, content_base64. Optional: parent_folder_id.
+    Upload,
+    /// Download file content as text. Requires: file_id.
+    Download,
+    /// Copy a file. Requires: file_id. Optional: new_name.
+    Copy,
+    /// Permanently delete a file. Requires: file_id.
+    Delete,
+    /// Export a Google Workspace file (Docs/Sheets/Slides) to another format. Requires: file_id, mime_type (e.g. 'application/pdf').
+    Export,
+    /// List who has access to a file. Requires: file_id.
+    ListPermissions,
+    /// Share a file with another user. Requires: file_id, share_email. Optional: role (default: 'reader').
+    Share,
+    /// Remove a user's access. Requires: file_id, permission_id.
+    Unshare,
+    /// Set up push notifications for file changes. Requires: file_id, webhook_address.
+    Watch,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct ManageDriveArgs {
+    /// The operation to perform.
     pub operation: DriveOperation,
+    /// Authenticated user email (or 'me').
     pub email: String,
+    /// File ID — required for most operations.
     pub file_id: Option<String>,
+    /// Drive search query (e.g. "mimeType='application/pdf'" or "name contains 'invoice'").
     pub query: Option<String>,
+    /// File name — required for: upload.
     pub name: Option<String>,
+    /// MIME type — required for: upload, export.
     pub mime_type: Option<String>,
+    /// Base64-encoded file content — required for: upload.
     pub content_base64: Option<String>,
+    /// Parent folder ID to upload into.
     pub parent_folder_id: Option<String>,
+    /// New name for copied file.
     pub new_name: Option<String>,
+    /// Email to share with — required for: share.
     pub share_email: Option<String>,
+    /// Permission role: 'reader', 'writer', 'commenter', or 'owner'.
     pub role: Option<String>,
+    /// Permission ID to revoke — required for: unshare.
     pub permission_id: Option<String>,
+    /// Maximum number of results (default: 10).
     pub max_results: Option<u32>,
+    /// HTTPS webhook URL — required for: watch.
     pub webhook_address: Option<String>,
 }
 
@@ -293,11 +383,30 @@ impl McpTool for ManageDriveTool {
 // MANAGE DOCS
 // =============================================================================
 
-#[derive(Serialize, Deserialize, JsonSchema, Debug)] #[serde(rename_all = "snake_case")]
-pub enum DocsOperation { Get, Create, Write }
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum DocsOperation {
+    /// Get document content by ID. Requires: document_id.
+    Get,
+    /// Create a new empty document. Optional: title.
+    Create,
+    /// Append text to an existing document. Requires: document_id, text.
+    Write,
+}
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct ManageDocsArgs { pub operation: DocsOperation, pub email: String, pub document_id: Option<String>, pub title: Option<String>, pub text: Option<String> }
+pub struct ManageDocsArgs {
+    /// The operation to perform.
+    pub operation: DocsOperation,
+    /// Authenticated user email (or 'me').
+    pub email: String,
+    /// Document ID — required for: get, write.
+    pub document_id: Option<String>,
+    /// Document title — for: create.
+    pub title: Option<String>,
+    /// Text content to append — required for: write.
+    pub text: Option<String>,
+}
 
 pub struct ManageDocsTool { port: Arc<dyn DocsPort> }
 impl ManageDocsTool { pub fn new(port: Arc<dyn DocsPort>) -> Self { Self { port } } }
@@ -321,14 +430,35 @@ impl McpTool for ManageDocsTool {
 // MANAGE SHEETS
 // =============================================================================
 
-#[derive(Serialize, Deserialize, JsonSchema, Debug)] #[serde(rename_all = "snake_case")]
-pub enum SheetsOperation { Get, Create, Read, Append, UpdateValues }
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum SheetsOperation {
+    /// Get spreadsheet metadata. Requires: spreadsheet_id.
+    Get,
+    /// Create a new spreadsheet. Optional: title.
+    Create,
+    /// Read cell values from a range. Requires: spreadsheet_id, range (e.g. 'Sheet1!A1:C10').
+    Read,
+    /// Append rows to a range. Requires: spreadsheet_id, range, values_json.
+    Append,
+    /// Overwrite cell values in a range. Requires: spreadsheet_id, range, values_json.
+    UpdateValues,
+}
 
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct ManageSheetsArgs {
-    pub operation: SheetsOperation, pub email: String,
-    pub spreadsheet_id: Option<String>, pub title: Option<String>,
-    pub range: Option<String>, pub values_json: Option<String>,
+    /// The operation to perform.
+    pub operation: SheetsOperation,
+    /// Authenticated user email (or 'me').
+    pub email: String,
+    /// Spreadsheet ID — required for: get, read, append, update_values.
+    pub spreadsheet_id: Option<String>,
+    /// Spreadsheet title — for: create.
+    pub title: Option<String>,
+    /// Cell range in A1 notation (e.g. 'Sheet1!A1:C10') — required for: read, append, update_values.
+    pub range: Option<String>,
+    /// JSON array of row arrays (e.g. '[["Name","Age"],["Alice",30]]') — required for: append, update_values.
+    pub values_json: Option<String>,
 }
 
 pub struct ManageSheetsTool { port: Arc<dyn SheetsPort> }
@@ -369,11 +499,26 @@ impl McpTool for ManageSheetsTool {
 // MANAGE SLIDES
 // =============================================================================
 
-#[derive(Serialize, Deserialize, JsonSchema, Debug)] #[serde(rename_all = "snake_case")]
-pub enum SlidesOperation { Get, Create }
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum SlidesOperation {
+    /// Get presentation metadata and slides. Requires: presentation_id.
+    Get,
+    /// Create a new presentation. Optional: title.
+    Create,
+}
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct ManageSlidesArgs { pub operation: SlidesOperation, pub email: String, pub presentation_id: Option<String>, pub title: Option<String> }
+pub struct ManageSlidesArgs {
+    /// The operation to perform.
+    pub operation: SlidesOperation,
+    /// Authenticated user email (or 'me').
+    pub email: String,
+    /// Presentation ID — required for: get.
+    pub presentation_id: Option<String>,
+    /// Presentation title — for: create.
+    pub title: Option<String>,
+}
 
 pub struct ManageSlidesTool { port: Arc<dyn SlidesPort> }
 impl ManageSlidesTool { pub fn new(port: Arc<dyn SlidesPort>) -> Self { Self { port } } }
@@ -396,11 +541,24 @@ impl McpTool for ManageSlidesTool {
 // MANAGE FORMS
 // =============================================================================
 
-#[derive(Serialize, Deserialize, JsonSchema, Debug)] #[serde(rename_all = "snake_case")]
-pub enum FormsOperation { Get, ListResponses }
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum FormsOperation {
+    /// Get form structure (questions, sections). Requires: form_id.
+    Get,
+    /// List all submitted responses. Requires: form_id.
+    ListResponses,
+}
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct ManageFormsArgs { pub operation: FormsOperation, pub email: String, pub form_id: Option<String> }
+pub struct ManageFormsArgs {
+    /// The operation to perform.
+    pub operation: FormsOperation,
+    /// Authenticated user email (or 'me').
+    pub email: String,
+    /// Form ID — required for all operations.
+    pub form_id: Option<String>,
+}
 
 pub struct ManageFormsTool { port: Arc<dyn FormsPort> }
 impl ManageFormsTool { pub fn new(port: Arc<dyn FormsPort>) -> Self { Self { port } } }
@@ -423,16 +581,45 @@ impl McpTool for ManageFormsTool {
 // MANAGE TASKS
 // =============================================================================
 
-#[derive(Serialize, Deserialize, JsonSchema, Debug)] #[serde(rename_all = "snake_case")]
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
 pub enum TasksOperation {
-    ListTaskLists, CreateTaskList, DeleteTaskList, List, Get, Create, Update, Complete, Delete,
+    /// List all task lists.
+    ListTaskLists,
+    /// Create a new task list. Requires: title.
+    CreateTaskList,
+    /// Delete a task list. Requires: task_list_id.
+    DeleteTaskList,
+    /// List tasks in a task list. Requires: task_list_id.
+    List,
+    /// Get a single task. Requires: task_list_id, task_id.
+    Get,
+    /// Create a task. Requires: task_list_id, title. Optional: notes, due.
+    Create,
+    /// Update a task. Requires: task_list_id, task_id. Optional: title, notes, due.
+    Update,
+    /// Mark a task as completed. Requires: task_list_id, task_id.
+    Complete,
+    /// Delete a task. Requires: task_list_id, task_id.
+    Delete,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct ManageTasksArgs {
-    pub operation: TasksOperation, pub email: String,
-    pub task_list_id: Option<String>, pub task_id: Option<String>,
-    pub title: Option<String>, pub notes: Option<String>, pub due: Option<String>,
+    /// The operation to perform.
+    pub operation: TasksOperation,
+    /// Authenticated user email (or 'me').
+    pub email: String,
+    /// Task list ID — required for most operations.
+    pub task_list_id: Option<String>,
+    /// Task ID — required for: get, update, complete, delete.
+    pub task_id: Option<String>,
+    /// Task or list title.
+    pub title: Option<String>,
+    /// Task notes/description.
+    pub notes: Option<String>,
+    /// Due date in RFC 3339 format (e.g. '2024-01-15T00:00:00Z').
+    pub due: Option<String>,
 }
 
 pub struct ManageTasksTool { port: Arc<dyn TasksPort> }
@@ -463,11 +650,28 @@ impl McpTool for ManageTasksTool {
 // MANAGE MEET
 // =============================================================================
 
-#[derive(Serialize, Deserialize, JsonSchema, Debug)] #[serde(rename_all = "snake_case")]
-pub enum MeetOperation { ListConferences, GetConference, ListParticipants }
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum MeetOperation {
+    /// List recent conference records. Optional: max_results.
+    ListConferences,
+    /// Get details of a specific conference. Requires: conference_id.
+    GetConference,
+    /// List participants in a conference. Requires: conference_id.
+    ListParticipants,
+}
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct ManageMeetArgs { pub operation: MeetOperation, pub email: String, pub conference_id: Option<String>, pub max_results: Option<u32> }
+pub struct ManageMeetArgs {
+    /// The operation to perform.
+    pub operation: MeetOperation,
+    /// Authenticated user email (or 'me').
+    pub email: String,
+    /// Conference record name/ID (e.g. 'conferenceRecords/abc123') — required for: get_conference, list_participants.
+    pub conference_id: Option<String>,
+    /// Maximum number of results (default: 25).
+    pub max_results: Option<u32>,
+}
 
 pub struct ManageMeetTool { port: Arc<dyn MeetPort> }
 impl ManageMeetTool { pub fn new(port: Arc<dyn MeetPort>) -> Self { Self { port } } }
@@ -491,11 +695,30 @@ impl McpTool for ManageMeetTool {
 // MANAGE PHOTOS
 // =============================================================================
 
-#[derive(Serialize, Deserialize, JsonSchema, Debug)] #[serde(rename_all = "snake_case")]
-pub enum PhotosOperation { ListAlbums, ListMedia, GetMedia }
+#[derive(Serialize, Deserialize, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum PhotosOperation {
+    /// List all photo albums.
+    ListAlbums,
+    /// List media items (photos/videos). Optional: album_id (filter by album), page_size.
+    ListMedia,
+    /// Get details of a single media item. Requires: media_item_id.
+    GetMedia,
+}
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct ManagePhotosArgs { pub operation: PhotosOperation, pub email: String, pub album_id: Option<String>, pub media_item_id: Option<String>, pub page_size: Option<u32> }
+pub struct ManagePhotosArgs {
+    /// The operation to perform.
+    pub operation: PhotosOperation,
+    /// Authenticated user email (or 'me').
+    pub email: String,
+    /// Album ID to filter media items by.
+    pub album_id: Option<String>,
+    /// Media item ID — required for: get_media.
+    pub media_item_id: Option<String>,
+    /// Number of items to return (default: 50, max: 100).
+    pub page_size: Option<u32>,
+}
 
 pub struct ManagePhotosTool { port: Arc<dyn PhotosPort> }
 impl ManagePhotosTool { pub fn new(port: Arc<dyn PhotosPort>) -> Self { Self { port } } }
