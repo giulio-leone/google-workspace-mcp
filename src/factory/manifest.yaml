@@ -1058,6 +1058,15 @@ services:
             type: string
             description: "Form ID"
             required: true
+      listResponses:
+        type: list
+        description: "list form responses"
+        resource: forms.responses.list
+        params:
+          formId:
+            type: string
+            description: "Form ID"
+            required: true
 
   # ========================================================================
   # Meet
