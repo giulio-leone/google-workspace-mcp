@@ -522,11 +522,4 @@ impl PhotosPort for GoogleClient {
     }
 }
 
-// ============================================================================
-// NOTEBOOKLM
-// ============================================================================
 
-#[async_trait]
-impl NotebookLmPort for GoogleClient {
-    async fn list_notebooks(&self) -> Result<Vec<Notebook>> { Ok(vec![]) }
-}

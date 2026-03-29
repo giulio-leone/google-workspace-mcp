@@ -20,8 +20,6 @@ pub struct PhotoAlbum { pub id: String, pub title: String }
 #[serde(rename_all = "camelCase")]
 pub struct PhotoMediaItem { pub id: String, pub mime_type: Option<String>, pub base_url: Option<String> }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Notebook { pub id: String, pub title: String }
 
 // ============================================================================
 // GMAIL PORT
@@ -183,7 +181,19 @@ pub trait PhotosPort: Send + Sync {
 // NOTEBOOKLM PORT
 // ============================================================================
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NotebookLmEntry {
+    pub id: String,
+    pub title: String,
+    pub created_at: Option<String>,
+}
+
 #[async_trait]
 pub trait NotebookLmPort: Send + Sync {
-    async fn list_notebooks(&self) -> Result<Vec<Notebook>>;
+    async fn list_notebooks(&self, email: &str) -> Result<Vec<NotebookLmEntry>>;
+    async fn create_notebook(&self, email: &str, title: &str) -> Result<NotebookLmEntry>;
+    async fn delete_notebook(&self, email: &str, notebook_id: &str) -> Result<()>;
+    async fn get_summary(&self, email: &str, notebook_id: &str) -> Result<String>;
+    async fn add_source_url(&self, email: &str, notebook_id: &str, url: &str) -> Result<serde_json::Value>;
+    async fn chat(&self, email: &str, notebook_id: &str, question: &str) -> Result<String>;
 }

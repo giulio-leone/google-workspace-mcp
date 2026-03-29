@@ -520,10 +520,36 @@ impl McpTool for ManagePhotosTool {
 // =============================================================================
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug)] #[serde(rename_all = "snake_case")]
-pub enum NotebookLmOperation { List }
+pub enum NotebookLmOperation {
+    /// List all notebooks.
+    List,
+    /// Create a new notebook.
+    Create,
+    /// Delete a notebook by ID.
+    Delete,
+    /// Get an AI-generated summary of a notebook's sources.
+    GetSummary,
+    /// Add a URL as a source to a notebook.
+    AddSourceUrl,
+    /// Ask a question about the notebook's content (AI chat).
+    Chat,
+}
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct ManageNotebookLmArgs { pub operation: NotebookLmOperation, pub email: String }
+pub struct ManageNotebookLmArgs {
+    /// The operation to perform.
+    pub operation: NotebookLmOperation,
+    /// Authenticated user email (or 'me').
+    pub email: String,
+    /// Notebook ID — required for: delete, get_summary, add_source_url, chat.
+    pub notebook_id: Option<String>,
+    /// Title — required for: create.
+    pub title: Option<String>,
+    /// URL to add as source — required for: add_source_url.
+    pub url: Option<String>,
+    /// Question to ask — required for: chat.
+    pub question: Option<String>,
+}
 
 pub struct ManageNotebookLmTool { port: Arc<dyn NotebookLmPort> }
 impl ManageNotebookLmTool { pub fn new(port: Arc<dyn NotebookLmPort>) -> Self { Self { port } } }
@@ -531,12 +557,40 @@ impl ManageNotebookLmTool { pub fn new(port: Arc<dyn NotebookLmPort>) -> Self { 
 #[async_trait]
 impl McpTool for ManageNotebookLmTool {
     fn name(&self) -> &'static str { "manage_notebooklm" }
-    fn description(&self) -> &'static str { "Manage Google NotebookLM notebooks." }
+    fn description(&self) -> &'static str {
+        "Manage Google NotebookLM notebooks: list, create, delete, summarize sources, add URL sources, and chat with notebook content."
+    }
     fn input_schema(&self) -> serde_json::Value { serde_json::to_value(schemars::schema_for!(ManageNotebookLmArgs)).unwrap() }
     async fn call(&self, arguments: serde_json::Value) -> anyhow::Result<serde_json::Value> {
         let a: ManageNotebookLmArgs = serde_json::from_value(arguments)?;
         match a.operation {
-            NotebookLmOperation::List => Ok(serde_json::to_value(self.port.list_notebooks().await?)?),
+            NotebookLmOperation::List => Ok(serde_json::to_value(self.port.list_notebooks(&a.email).await?)?),
+            NotebookLmOperation::Create => {
+                let title = a.title.context("title required")?;
+                Ok(serde_json::to_value(self.port.create_notebook(&a.email, &title).await?)?)
+            }
+            NotebookLmOperation::Delete => {
+                let nid = a.notebook_id.context("notebook_id required")?;
+                self.port.delete_notebook(&a.email, &nid).await?;
+                Ok(serde_json::json!({"status": "deleted"}))
+            }
+            NotebookLmOperation::GetSummary => {
+                let nid = a.notebook_id.context("notebook_id required")?;
+                let summary = self.port.get_summary(&a.email, &nid).await?;
+                Ok(serde_json::json!({"summary": summary}))
+            }
+            NotebookLmOperation::AddSourceUrl => {
+                let nid = a.notebook_id.context("notebook_id required")?;
+                let url = a.url.context("url required")?;
+                let result = self.port.add_source_url(&a.email, &nid, &url).await?;
+                Ok(serde_json::json!({"status": "added", "result": result}))
+            }
+            NotebookLmOperation::Chat => {
+                let nid = a.notebook_id.context("notebook_id required")?;
+                let question = a.question.context("question required")?;
+                let answer = self.port.chat(&a.email, &nid, &question).await?;
+                Ok(serde_json::json!({"question": question, "answer": answer}))
+            }
         }
     }
 }

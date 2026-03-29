@@ -2,7 +2,7 @@
 
 use napi_derive::napi;
 use gws_adapter_mcp::{McpServer, ManageEmailTool, ManageCalendarTool, ManageDriveTool, ManageDocsTool, ManageSheetsTool, ManageSlidesTool, ManageFormsTool, ManageTasksTool, ManageMeetTool, ManagePhotosTool, ManageNotebookLmTool, ManageAccountsTool};
-use gws_adapter_google::{GoogleClient, TokenStore};
+use gws_adapter_google::{GoogleClient, NotebookLmClient, TokenStore};
 use std::sync::Arc;
 use napi::{Result, Error, Status};
 use tokio::runtime::Runtime;
@@ -36,7 +36,7 @@ impl ServerWrapper {
         server.register_tool(Arc::new(ManageTasksTool::new(client.clone())));
         server.register_tool(Arc::new(ManageMeetTool::new(client.clone())));
         server.register_tool(Arc::new(ManagePhotosTool::new(client.clone())));
-        server.register_tool(Arc::new(ManageNotebookLmTool::new(client.clone())));
+        server.register_tool(Arc::new(ManageNotebookLmTool::new(Arc::new(NotebookLmClient::new()))));
 
         let rt = Runtime::new().map_err(|e| Error::new(Status::GenericFailure, e.to_string()))?;
         Ok(Self { server, rt })

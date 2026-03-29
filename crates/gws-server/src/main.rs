@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use gws_adapter_google::{GoogleClient, TokenStore};
+use gws_adapter_google::{GoogleClient, NotebookLmClient, TokenStore};
 use gws_adapter_mcp::*;
 use serde_json::{json, Value};
 use std::io::{self, BufRead, Write};
@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
     server.register_tool(Arc::new(ManageTasksTool::new(client.clone())));
     server.register_tool(Arc::new(ManageMeetTool::new(client.clone())));
     server.register_tool(Arc::new(ManagePhotosTool::new(client.clone())));
-    server.register_tool(Arc::new(ManageNotebookLmTool::new(client.clone())));
+    server.register_tool(Arc::new(ManageNotebookLmTool::new(Arc::new(NotebookLmClient::new()))));
 
     let stdin = io::stdin();
     let stdout = io::stdout();
