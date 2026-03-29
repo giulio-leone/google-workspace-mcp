@@ -1,0 +1,16 @@
+[package]
+name = "gws-adapter-mcp"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gws-domain = { path = "../gws-domain" }
+gws-ports = { path = "../gws-ports" }
+gws-adapter-google = { path = "../gws-adapter-google" }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+schemars = { workspace = true }
+uuid = { version = "1.23.0", features = ["v4"] }

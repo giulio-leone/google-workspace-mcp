@@ -1,0 +1,17 @@
+[package]
+name = "gws-server"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "gws-mcp-server"
+path = "src/main.rs"
+
+[dependencies]
+gws-adapter-mcp = { path = "../gws-adapter-mcp" }
+gws-adapter-google = { path = "../gws-adapter-google" }
+gws-ports = { path = "../gws-ports" }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["full"] }

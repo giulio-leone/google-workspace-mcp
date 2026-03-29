@@ -1,0 +1,12 @@
+[package]
+name = "gws-ports"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gws-domain = { path = "../gws-domain" }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

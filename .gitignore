@@ -1,19 +1,15 @@
-# Dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Rust build artifacts
+/target/
+**/*.rs.bk
 
-# Build output
-build/
-dist/
-*.tsbuildinfo
+# Cargo lock for library crates (keep for binary)
+# Cargo.lock is committed for reproducible builds
 
 # Environment
 .env
 .env.*
 
-# Credentials
+# Credentials & tokens (never commit secrets)
 config/gauth.json
 config/accounts.json
 config/credentials/
@@ -24,6 +20,7 @@ config/credentials/
 .vscode/
 *.swp
 *.swo
+.claude/
 
 # OS
 .DS_Store
@@ -33,12 +30,22 @@ Thumbs.db
 logs/
 *.log
 
-# Test coverage
-coverage/
-commit-message.txt
-discovered-manifest.yaml
-
 # MCPB build artifacts
 *.mcpb
 mcpb/server/
 mcpb/bin/
+
+# Legacy Node.js (removed)
+node_modules/
+build/
+dist/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+commit-message.txt
+discovered-manifest.yaml
+
+# Worktrees
+.worktrees/
